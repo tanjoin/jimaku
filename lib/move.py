@@ -19,8 +19,10 @@ def moveLeftToRight(img, img2):
     distance = rw2
     y = h - rh2
 
-    for i in range(speed):
-        tmp = img.copy()
+    tmp = Image.new('RGBA', img.size, (255, 255, 255, 0))
+    tmp.paste(img)
+
+    for i in range(speed):        
         if i == 0:
             x = w
         else:
@@ -29,13 +31,14 @@ def moveLeftToRight(img, img2):
         print(w, h, w2, h2, rw2, rh2, x, y)
         # tmp.paste(img2, (x, h))
 
-        tmp.paste(img2, (x, y))
-        tmp.save(".tmp.png", quality=100)
+        two_padded = Image.new('RGBA', tmp.size, (255, 255, 255, 0))
+        two_padded.paste(img2, (x, y))
+        tmp2 = Image.alpha_composite(tmp, two_padded)
+        tmp2.save(".tmp.png", quality=100)
         mat = cv2.imread(".tmp.png")
         video.write(mat)
 
     for i in range(0, 50, 1):
-        tmp = img.copy()
         target = img2.copy()
         # 回転
         rad = numpy.radians(i/10)
@@ -55,13 +58,14 @@ def moveLeftToRight(img, img2):
             None
         )
 
-        tmp.paste(img2, (x, y))
-        tmp.save(".tmp.png", quality=100)
+        two_padded = Image.new('RGBA', tmp.size, (255, 255, 255, 0))
+        two_padded.paste(target, (x, y))
+        tmp2 = Image.alpha_composite(tmp, two_padded)
+        tmp2.save(".tmp.png", quality=100)
         mat = cv2.imread(".tmp.png")
         video.write(mat)
     
     for i in range(50, -50, -1):
-        tmp = img.copy()
         target = img2.copy()
         # 回転
         rad = numpy.radians(i/10)
@@ -81,13 +85,14 @@ def moveLeftToRight(img, img2):
             None
         )
 
-        tmp.paste(img2, (x, y))
-        tmp.save(".tmp.png", quality=100)
+        two_padded = Image.new('RGBA', tmp.size, (255, 255, 255, 0))
+        two_padded.paste(target, (x, y))
+        tmp2 = Image.alpha_composite(tmp, two_padded)
+        tmp2.save(".tmp.png", quality=100)
         mat = cv2.imread(".tmp.png")
         video.write(mat)
 
     for i in range(-50, 0, 1):
-        tmp = img.copy()
         target = img2.copy()
         # 回転
         rad = numpy.radians(i/10)
@@ -107,11 +112,13 @@ def moveLeftToRight(img, img2):
             None
         )
 
-        tmp.paste(img2, (x, y))
-        tmp.save(".tmp.png", quality=100)
+        two_padded = Image.new('RGBA', tmp.size, (255, 255, 255, 0))
+        two_padded.paste(target, (x, y))
+        tmp2 = Image.alpha_composite(tmp, two_padded)
+        tmp2.save(".tmp.png", quality=100)
         mat = cv2.imread(".tmp.png")
         video.write(mat)
 
     video.release()
 
-moveLeftToRight(Image.open('res/screen2.png'), Image.open('res/sample/target.png'))
+moveLeftToRight(Image.open('res/screen3.png'), Image.open('res/sample/target2.png'))
