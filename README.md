@@ -15,10 +15,15 @@ pipenv install
 
 ```
 pipenv shell
-python main.py res/screen.png こんにちは
+python main.py -t こんにちは
+python main.py -f res/sample/sample.txt
 ```
 
 ## TODO
-- [] テキストファイルの文字を一括生成
-- [] 自動で折り返し
-- [] VOICEBOXのずんだもんの声を付けたムービーを生成
+- 自動で折り返し
+- VOICEBOXのずんだもんの声を付けたムービーを生成
+- キャラクターアニメーション
+  - 検証スクリプト（背景画像と前景画像を用意する）
+    ```
+    python lib/move.py
+    ```

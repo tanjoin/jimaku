@@ -121,4 +121,4 @@ def moveLeftToRight(img, img2):
 
     video.release()
 
-moveLeftToRight(Image.open('res/screen3.png'), Image.open('res/sample/target2.png'))
+moveLeftToRight(Image.open('res/screen.png'), Image.open('res/sample/target.png'))
