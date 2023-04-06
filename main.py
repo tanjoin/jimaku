@@ -1,18 +1,27 @@
 import importlib
 import argparse
 jimaku = importlib.import_module('lib.jimaku')
+font_config = importlib.import_module('lib.font_config')
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='字幕をつけます')
-    parser.add_argument('src_file', help='画像ファイル')
-    parser.add_argument('text', help='入力したいテキスト')
+    parser.add_argument('-s', '--src', help='画像ファイル', default = 'res/screen.png')
+    parser.add_argument('-t', '--text', help='入力したいテキスト')
+    parser.add_argument('-f', '--file', help='入力したいテキストファイル')
+    parser.add_argument('-o', '--output', help='出力先ディレクトリ', default = "dst/")
 
     args = parser.parse_args()
-    src_file = args.src_file
+    src = args.src
     text = args.text
+    file = args.file
+    output = args.output
+    if not output.endswith('/'):
+            output = output + '/'
 
-    print(src_file.rsplit('/', 1)[-1])
-    print(text)
+    if text:
+        print(text)
+        jimaku.put(src, text, font_config.FontConfig(),  output)
 
-    jimaku.put(src_file, text)
-
+    if file:
+        print(file.rsplit('/', 1)[-1])
+        jimaku.puts(src, file, font_config.FontConfig(), output)
