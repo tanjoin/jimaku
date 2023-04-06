@@ -1,2 +1,6 @@
 output.png
 dst/*.png
+res/sample/target.png
+.tmp.png
+output.mp4
+res/screen2.png
