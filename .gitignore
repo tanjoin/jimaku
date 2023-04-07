@@ -4,3 +4,6 @@ res/sample/target*.png
 .tmp.png
 output.mp4
 res/screen*.png
+
+*.png
+*.mp4
