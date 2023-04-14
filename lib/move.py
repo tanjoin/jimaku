@@ -12,20 +12,15 @@ class ExImage:
         cv2.imwrite('.tmp.png', cv2_image)
         return Image.open('.tmp.png')
 
-def moveLeftToRightWithVideo(video_path, img2):
+def moveLeftToRightWithVideo(video_path, img2, output):
     cap = cv2.VideoCapture(video_path)
 
     if not cap.isOpened():
         return
     
-    # os.makedirs(dir_path, exist_ok=True)    
-    # base_path = os.path.join(dir_path, basename)
-
     digit = len(str(int(cap.get(cv2.CAP_PROP_FRAME_COUNT))))
 
     print('digit: {}'.format(digit))
-
-    # cap.set(cv2.CAP_PROP_POS_FRAMES, frame_num)
 
     width = cap.get(cv2.CAP_PROP_FRAME_WIDTH)
     height = cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
@@ -36,10 +31,11 @@ def moveLeftToRightWithVideo(video_path, img2):
     print('size: {}'.format(size))
 
     codec = cv2.VideoWriter_fourcc(*"mp4v")
-    video  = cv2.VideoWriter('output.mp4', codec, fps, size)
+    video  = cv2.VideoWriter(output, codec, fps, size)
 
     # 変換設定
-    affines, img2 = leftToRight_FuwaFuwa(size, img2, 24)
+    speed = 24
+    affines, img2 = leftToRight_FuwaFuwa(size, img2, speed)
 
     print("motion count: {}".format(len(affines)))
 
@@ -57,6 +53,7 @@ def moveLeftToRightWithVideo(video_path, img2):
                 1,
                 None
             )
+            print(a)
             two_padded = Image.new('RGBA', size, (255, 255, 255, 0))
             two_padded.paste(target, (0, 0))
             frame.putalpha(alpha=255)
@@ -80,14 +77,14 @@ def leftToRight_FuwaFuwa(size, img2, speed, fuwaloop = 2):
     w, h = size
     w2, h2 = img2.size
     if h < h2:
-        rh2 = h
+        rh2 = int(h / 2)
     else:
-        rh2 = h2
+        rh2 = int(h2 / 2)
     rw2 = int(w2 * (rh2 / h2))
     img2 = img2.copy().resize((rw2, rh2))
 
     distance = rw2
-    y = h - rh2
+    y = h - rh2 - 10
 
     # 入場
     for i in range(speed):
@@ -102,45 +99,57 @@ def leftToRight_FuwaFuwa(size, img2, speed, fuwaloop = 2):
             [0, 0, 1]
         ))
 
-    # ふわふわ
-    for j in range(fuwaloop):
-        for i in range(0, 50, 1):
-            target = img2.copy()
-            # 回転
-            rad = numpy.radians(i/10)
-            r = numpy.array([
-                [numpy.cos(rad), -numpy.sin(rad), i + x],
-                [numpy.sin(rad),  numpy.cos(rad), 0 + y],
-                [             0,               0, 1]
-            ])
-            affines.append(r)
-        
-        for i in range(50, -50, -1):
-            target = img2.copy()
-            # 回転
-            rad = numpy.radians(i/10)
-            r = numpy.array([
-                [numpy.cos(rad), -numpy.sin(rad), i + x],
-                [numpy.sin(rad),  numpy.cos(rad), 0 + y],
-                [             0,               0, 1]
-            ])
-            affines.append(r)
+    print("x : ", x)
 
-        for i in range(-50, 0, 1):
-            target = img2.copy()
-            # 回転
-            rad = numpy.radians(i/10)
-            r = numpy.array([
-                [numpy.cos(rad), -numpy.sin(rad), i + x],
-                [numpy.sin(rad),  numpy.cos(rad), 0 + y],
-                [             0,               0, 1]
-            ])
-            affines.append(r)
+    # ふわふわ
+    count = 400
+    for i in range(0, count, 1):
+        # 回転
+        if (i < count / 2):
+            radz = numpy.radians(10 * i / count)
+        else:
+            radz = numpy.radians(10 * (count - i) / count)
+        d = numpy.sqrt(rh2**2 + rw2**2)
+        f = d / (2 * numpy.sin(radz) if numpy.sin(radz) != 0 else 1)
+        rz = numpy.array([
+            [numpy.cos(radz), -numpy.sin(radz), 0, 0],
+            [numpy.sin(radz),  numpy.cos(radz), 0, 0],
+            [              0,                0, 1, 0],
+            [              0,                0, 0, 1]
+        ])
+        rady = numpy.radians(360 * i / 200)
+        ry = numpy.array([
+            [numpy.cos(rady), 0, - numpy.sin(rady), 0],
+            [              0, 1,                 0, 0],
+            [numpy.sin(rady), 0,   numpy.cos(rady), 0],
+            [              0, 0,                 0, 1]
+        ])
+        r = numpy.dot(ry, rz)
+        t = numpy.array([
+            [1, 0, 0, 0],
+            [0, 1, 0, 0],
+            [0, 0, 1, f],
+            [0, 0, 0, 1]
+        ])
+        a1 = numpy.array([ 
+            [1, 0,  1],                
+            [0, 1,  1],
+            [0, 0,  1],
+            [0, 0,  1]
+        ])
+        a2 = numpy.array([
+            [1, 0, x - numpy.cos(rady) * rw2 / 2 + rw2 / 2, 0],
+            [0, 1, y, 0],
+            [0, 0, 1, 0]
+        ])
+                
+        s = numpy.dot(a2, numpy.dot(t, numpy.dot(r, a1)))
+        affines.append(s)
     
     # 退場
     for i in range(speed):
         if i == 0:
-            x = w - w2
+            x = w - rw2
         else:
             x = w - rw2 + int(rw2 * (i / (speed - 1)))
         
@@ -273,4 +282,4 @@ def moveLeftToRight(img, img2):
 
 # moveLeftToRight(Image.open('res/screen.png'), Image.open('res/sample/target.png'))
 
-moveLeftToRightWithVideo('ラム.mp4', Image.open('ラム.png'))
+moveLeftToRightWithVideo('山郷.mp4', Image.open('山郷.png'), 'output山郷.mp4')
